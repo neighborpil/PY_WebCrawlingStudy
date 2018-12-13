@@ -24,7 +24,10 @@ class CrawlingInstagram:
     driver = wd.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.instagram.com/accounts/login/?source=auth_switcher'
     tag = ''
+    path = ''
     IMAGE_COUNT = 100
+    total_link_list = []
+
 
     def login(self, id, pwd):
         self.driver.get(self.url)
@@ -90,57 +93,71 @@ class CrawlingInstagram:
                 self.driver.implicitly_wait(10)
                 return True
 
-    # 캡춰
+    # 크롤링
     def crawl(self):
-        link_list = self.get_link_list();
-        if len(link_list) > 0:
-            self.download_image(link_list);
+        while len(self.total_link_list) < 100:
+            list_dic = self.get_list() # 목록 가져오기
+            for key in list_dic.keys(): # 파일이름이랑 파일경로 찾기
+
+                if len(self.total_link_list) > self.IMAGE_COUNT - 1: # 지정된 횟수만큼 돌기
+                    print('crawling finished')
+                    break;
+
+                if key in self.total_link_list: # 키가 있따면 패스
+                    continue
+                else: # 없으면 
+                    if len(self.total_link_list) == 0: # 첫번째로 폴더 만들고
+                        self.create_folder();
+
+                    self.total_link_list.append(key); # 키 추가하고
+                    self.download_image(key, list_dic[key]) # 다운로드
+
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") # 페이지 스크롤하여 더 생성
+            self.driver.implicitly_wait(2)
+
+    def create_folder(self):
+        # 폴더 생성
+        dt = f'{datetime.now():%Y%m%d%H%M%S}'
+        self.path = './' + self.tag + '_' + dt + '/' # tag + 시간
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
     
     # 리스트 구하기
-    def get_link_list(self):
-        link_list = []
-
+    def get_list(self):
         link_list = self.driver.find_elements_by_css_selector('.eLAPa>.KL4Bh>img.FFVAD')
-
-        # 나중에 스크롤 구현
-        #while(len(link_list) < self.IMAGE_COUNT):
-        #    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        #    self.driver.implicitly_wait(1)
-
-        return link_list
+        link_dic = {}
+        if len(link_list) > 0:
+            link_dic = self.to_link_dic(link_list)
+        return link_dic;
+            
+    # list to dic(filename: src)
+    def to_link_dic(self, link_list):
+        link_dic = {}
+        for link in link_list:
+            # 파일이름 자르기
+            try: 
+                src = link.get_attribute('src')
+                fild_address = src.split('?')[0]
+                words = fild_address.split('/')
+                file_name = words[len(words) - 1]
+                link_dic[file_name] = src
+            except Exception as e: # stale exception 떠서 예외처리
+                print('Error: ', e)
+        return link_dic
 
     #이미지 다운로드
-    def download_image(self, link_list):
-        if len(link_list) > 0:
-
-            # 폴더 생성
-            dt = f'{datetime.now():%Y%m%d%H%M%S}'
-            path = './' + self.tag + '_' + dt + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
-
-            for link in link_list:
-                # 파일이름 자르기
-                src = link.get_attribute('src')
-                fild_address = src.split('?')
-                words = fild_address[0].split('/')
-                # 저장
-                file_name = os.path.join(path, words[len(words) - 1])
-                urllib.request.urlretrieve(src, file_name)
-            print('crawling finished')
+    def download_image(self, key, src):
+        file_name = os.path.join(self.path, key)
+        urllib.request.urlretrieve(src, file_name)
+        print('captured(',len(self.total_link_list),')', file_name)
 
     def __del__(self):
         self.driver.close()
-         
-                    
-
-
 
 # __main__
 ci = CrawlingInstagram()
-#ci.crawl('okinawa')
-isReady = ci.login('id', 'pwd')
+isReady = ci.login('id', 'pwd') # login
 if isReady:
-    isEnteredSearchResult = ci.search('okinawa')
+    isEnteredSearchResult = ci.search('okinawa') # search
     if isEnteredSearchResult:
-        ci.crawl()
+        ci.crawl() # crawling
