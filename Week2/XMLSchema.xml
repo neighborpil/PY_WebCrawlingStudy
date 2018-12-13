@@ -1,0 +1,122 @@
+<!--
+XML Document
+-->
+<person>
+  <lastname>Server</lastname>
+  <dateborn>2001-04-02</dateborn>
+</person>
+
+<!--
+XML Schema Contract
+ - XML이 특정한 형태를 가지도록 Validation한다
+ - XSD XML Schema(.xsd) 이번에 사용
+ - XML을 넣어서 포맷에 맞는지 true/false를 반환한다
+-->
+<xs:complexType name="person" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:sequence>
+    <xs:element name="lastname" type="xs:string" />
+    <xs:element name="age" type="xs:integer" />
+    <xs:element name="dateborn" type="xs:date" />
+  </xs:sequence>  
+</xs:complexType>
+
+<!-- Example 2-->
+<person>
+  <lastname>Server</lastname>
+  <age>2134</age>
+  <dateborn>2012-03-13</dateborn>
+</person>
+
+<xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema" name="person">
+  <xs:sequence>
+    <xs:element name="lastname" type="xs:string" />
+    <xs:element name="age" type="xs:integer" />
+    <xs:element name="dateborn" type="xs:date" />
+  </xs:sequence>
+</xs:complexType>
+
+<!-- Example 3 -->
+<person>
+  <full_name>True Refsnes</full_name>
+  <child_name>Hege</child_name>
+  <child_name>Stale</child_name>
+  <child_name>Jim</child_name>
+  <child_name>Borge</child_name>
+</person>
+
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="person">
+  <xs:complexType name="person">
+    <xs:sequence>
+      <xs:element name="full_name" type="xs:string" minOccurs="1" maxOccurs="1" />
+      <!-- minOccurs="1"이고 maxOccurs="1"이므로 필수값-->
+      <xs:element name="child_name" type="xs:string" minOccurs="0" maxOccurs="10" />
+      <!-- minOccurs="0"이고 maxOccurs="10"이므로 없어도 되고 최대 10번까지-->
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<!-- XSD Data Types-->
+<customer>John</customer>
+<state>2002-09-32</state>
+<startdate>2002-05-30T09:30:10타임존</startdate>
+<prize>999.590</prize>
+<weeks>30</weeks>
+
+<!--
+xs:string
+xs:date - 짧은 날짜
+xs:dateTime - 긴 날짜
+xs:decimal - 실수
+xs:integer - 정수
+
+타임존 : 
+Z - UTC/GMT, 그리니치 표준시
+
+-->
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="customer" type="xs:string" />
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="start" type="xs:date" />
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="startdate" type="xs:dateTime" />
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="prize" type="xs:decimal" />
+<xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="weeks" type="xs:integer" />
+
+<!-- Example 4 -->
+
+<?xml version="1.0" encoding="utf-8"?>
+<Address
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="SimpleAddress.xsd">
+  <Recipient>Mr. Walt</Recipient>
+  <House>49</House>
+  <Street>Featherstone Street</Street>
+  <Town>LONDON</Town>
+  <PostCode>EECS 342</PostCode>
+  <Country>UK</Country>
+</Address>
+
+<!-- XSD contract -->
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Address">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Recipient" type="xs:string" />
+        <xs:element name="House" type="xs:integer" />
+        <xs:element name="Street" type="xs:string" />
+        <xs:element name="Town" type="xs:string" />
+        <xs:element name="Country" minOccurs="0" type="xs:string" />
+        <xs:element name="PostCode" type="xs:string" />
+        <xs:element name="Country">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="FR" />
+              <xs:enumeration value="DE" />
+              <xs:enumeration value="KR" />
+              <xs:enumeration value="JP" />
+              <xs:enumeration value="CN" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
