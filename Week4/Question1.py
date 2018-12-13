@@ -21,13 +21,15 @@ import os
 from datetime import datetime
 
 class CrawlingInstagram:
-    driver = wd.Chrome(executable_path='chromedriver.exe')
+    driver = ''
     url = 'https://www.instagram.com/accounts/login/?source=auth_switcher'
     tag = ''
     path = ''
     IMAGE_COUNT = 100
     total_link_list = []
 
+    def __init__(self):
+        self.driver = wd.Chrome(executable_path='chromedriver.exe')
 
     def login(self, id, pwd):
         self.driver.get(self.url)
