@@ -17,12 +17,14 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import re
 import urllib.request
-
+import os
+from datetime import datetime
 
 class CrawlingInstagram:
     driver = wd.Chrome(executable_path='chromedriver.exe')
     url = 'https://www.instagram.com/accounts/login/?source=auth_switcher'
-
+    tag = ''
+    IMAGE_COUNT = 100
 
     def login(self, id, pwd):
         self.driver.get(self.url)
@@ -69,6 +71,7 @@ class CrawlingInstagram:
         # 검색어 입력
         search_input = self.driver.find_element_by_css_selector('.MWDvN>.LWmhU>input.XTCLo')
         search_input.send_keys(tag)
+        self.tag = tag # 나중에 폴더 생성위해 tag 저장
         
         # 명시적 대기
         try:
@@ -87,25 +90,44 @@ class CrawlingInstagram:
                 self.driver.implicitly_wait(10)
                 return True
 
+    # 캡춰
     def crawl(self):
         link_list = self.get_link_list();
         if len(link_list) > 0:
             self.download_image(link_list);
-            
+    
+    # 리스트 구하기
     def get_link_list(self):
         link_list = []
+
         link_list = self.driver.find_elements_by_css_selector('.eLAPa>.KL4Bh>img.FFVAD')
+
+        # 나중에 스크롤 구현
+        #while(len(link_list) < self.IMAGE_COUNT):
+        #    self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        #    self.driver.implicitly_wait(1)
+
         return link_list
 
+    #이미지 다운로드
     def download_image(self, link_list):
         if len(link_list) > 0:
+
+            # 폴더 생성
+            dt = f'{datetime.now():%Y%m%d%H%M%S}'
+            path = './' + self.tag + '_' + dt + '/'
+            if not os.path.exists(path):
+                os.makedirs(path)
+
             for link in link_list:
+                # 파일이름 자르기
                 src = link.get_attribute('src')
                 fild_address = src.split('?')
                 words = fild_address[0].split('/')
-                file_name = words[len(words) - 1]
+                # 저장
+                file_name = os.path.join(path, words[len(words) - 1])
                 urllib.request.urlretrieve(src, file_name)
-
+            print('crawling finished')
 
     def __del__(self):
         self.driver.close()
